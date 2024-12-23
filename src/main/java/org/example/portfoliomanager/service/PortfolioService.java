@@ -13,7 +13,10 @@ import java.util.Set;
 @Service
 public class PortfolioService {
     private static final List<String> AVAILABLE_STOCKS = List.of("AAPL", "MSFT", "GOOG", "AMZN", "TSLA");
-
+    private final StockPriceService stockPriceService;
+    public PortfolioService(StockPriceService stockPriceService ) {
+        this.stockPriceService = stockPriceService;
+    }
     public List<Stock> initializePortfolio(User user) {
         // Validate the input user
         if (user == null) {
@@ -44,7 +47,11 @@ public class PortfolioService {
                 stock.setName("Stock " + randomTicker);
                 stock.setTicker(randomTicker);
                 stock.setQuantity(1);  // Default to 1, you can adjust as needed
-                stock.setBuyPrice(100.0);  // Default buy price, you can modify this
+                Double currentPrice = stockPriceService.getStockPrice(randomTicker);
+                if (currentPrice == 0.0) {
+                    throw new RuntimeException("Failed to fetch stock price for ticker: " + randomTicker);
+                }
+                stock.setBuyPrice(currentPrice);  // Set the fetched price
                 stock.setUser(user);  // Associate with the user
 
                 portfolio.add(stock);

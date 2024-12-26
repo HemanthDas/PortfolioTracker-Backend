@@ -101,9 +101,9 @@ public class StockService {
             return stockRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Stock with ID " + id + " not found."));
         } catch (RuntimeException ex) {
-            throw new RuntimeException("Error fetching stock by ID: " + ex.getMessage(), ex);
+            throw new RuntimeException( ex.getMessage(), ex);
         } catch (Exception ex) {
-            throw new RuntimeException("An unexpected error occurred while fetching stock by ID.", ex);
+            throw new RuntimeException("An unexpected error occurred while fetching stock by ID: " + id, ex);
         }
     }
 

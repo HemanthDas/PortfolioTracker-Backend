@@ -5,11 +5,13 @@ import org.example.portfoliomanager.dto.ResponseAPI;
 import org.example.portfoliomanager.dto.StockDTO;
 import org.example.portfoliomanager.models.Stock;
 import org.example.portfoliomanager.service.StockService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @RestController
+@CrossOrigin
 @RequestMapping("/api/stocks")
 public class StockController {
 
@@ -78,6 +80,27 @@ public class StockController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseAPI<StockDTO>> getStock(@PathVariable Long id) {
+        try {
+            // Fetch stock from the service layer
+            Stock stock = stockService.getStocksById(id);
+
+            // Convert the Stock entity to a DTO
+            StockDTO stockDTO = DTOMapper.toStockDTO(stock);
+
+            // Return the DTO in the response
+            return ResponseEntity.ok(new ResponseAPI<>(true, "Stock retrieved successfully.", stockDTO));
+        } catch (RuntimeException ex) {
+            // Handle known runtime exceptions, such as stock not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseAPI<>(false, "Error: " + ex.getMessage(), null));
+        } catch (Exception ex) {
+            // Handle unexpected exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseAPI<>(false, "An unexpected error occurred: " + ex.getMessage(), null));
+        }
+    }
 
     // Fetch all stocks for a user
     @GetMapping("/user/{userId}")

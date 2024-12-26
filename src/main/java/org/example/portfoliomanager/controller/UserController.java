@@ -8,6 +8,7 @@ import org.example.portfoliomanager.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @RestController
+@CrossOrigin
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
@@ -28,8 +29,9 @@ public class UserController {
             return ResponseEntity.badRequest()
                     .body(new ResponseAPI<>(false, "Invalid input: " + ex.getMessage(), null));
         } catch (Exception ex) {
+
             return ResponseEntity.status(500)
-                    .body(new ResponseAPI<>(false, "An unexpected error occurred.", null));
+                    .body(new ResponseAPI<>(false, ex.getMessage(), null));
         }
     }
 

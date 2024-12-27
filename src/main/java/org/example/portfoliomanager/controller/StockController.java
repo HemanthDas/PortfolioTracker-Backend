@@ -4,6 +4,7 @@ import org.example.portfoliomanager.dto.DTOMapper;
 import org.example.portfoliomanager.dto.ResponseAPI;
 import org.example.portfoliomanager.dto.StockDTO;
 import org.example.portfoliomanager.models.Stock;
+import org.example.portfoliomanager.service.StockPriceService;
 import org.example.portfoliomanager.service.StockService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +17,22 @@ import java.util.List;
 public class StockController {
 
     private final StockService stockService;
-
-    public StockController(StockService stockService) {
+    private final StockPriceService stockPriceService;
+    public StockController(StockService stockService, StockPriceService stockPriceService) {
         this.stockService = stockService;
+        this.stockPriceService = stockPriceService;
     }
 
     // Add a new stock
     @PostMapping("/{userId}")
     public ResponseEntity<ResponseAPI<StockDTO>> addStock(@PathVariable Long userId, @RequestBody Stock stock) {
         try {
+            System.out.println(stock);
+            if(!stockPriceService.isStockValid(stock.getTicker())){
+                return ResponseEntity.badRequest().body(
+                        new ResponseAPI<>(false, "Invalid stock symbol. Please ensure the stock exists in the real world.", null)
+                );
+            }
             Stock savedStock = stockService.addStock(userId, stock);
             StockDTO stockDTO = DTOMapper.toStockDTO(savedStock);
             ResponseAPI<StockDTO> response = new ResponseAPI<>(true, "Stock added successfully.", stockDTO);

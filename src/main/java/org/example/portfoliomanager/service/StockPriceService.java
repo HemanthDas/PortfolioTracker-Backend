@@ -1,5 +1,7 @@
 package org.example.portfoliomanager.service;
 
+import org.example.portfoliomanager.dto.StockOverviewResponse;
+import org.example.portfoliomanager.dto.StockPriceResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -10,13 +12,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Service
 public class StockPriceService {
     private static final String API_URL = "https://www.alphavantage.co/query";
-    @Value("${APIKEY}")
-    private static String API_KEY;
 
+    @Value("${APIKEY}")
+    private String API_KEY;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    /**
+     * Retrieves the latest stock price for a given ticker.
+     */
     @Cacheable("stockPrices")
     public Double getStockPrice(String ticker) {
-        String url = String.format("%s?function=GLOBAL_QUOTE&symbol=%s&outputsize=compact&apikey=%s", API_URL, ticker, API_KEY);
-        RestTemplate restTemplate = new RestTemplate();
+        String url = String.format("%s?function=GLOBAL_QUOTE&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
         try {
             StockPriceResponse response = restTemplate.getForObject(url, StockPriceResponse.class);
             if (response != null && response.getGlobalQuote() != null) {
@@ -27,30 +34,32 @@ public class StockPriceService {
         }
         return 0.0;
     }
-}
 
-class StockPriceResponse {
-    @JsonProperty("Global Quote")
-    private GlobalQuote globalQuote;
-
-    public GlobalQuote getGlobalQuote() {
-        return globalQuote;
+    /**
+     * Validates the existence of a stock by checking its overview data.
+     */
+    public boolean isStockValid(String ticker) {
+        System.out.println(ticker);
+        String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
+        try {
+            StockOverviewResponse response = restTemplate.getForObject(url, StockOverviewResponse.class);
+            return response != null && response.getName() != null && !response.getName().isEmpty();
+        } catch (Exception e) {
+            System.err.println("Error validating stock ticker [" + ticker + "]: " + e.getMessage());
+        }
+        return false;
     }
 
-    public void setGlobalQuote(GlobalQuote globalQuote) {
-        this.globalQuote = globalQuote;
-    }
-}
-
-class GlobalQuote {
-    @JsonProperty("05. price")
-    private String price;
-
-    public String getPrice() {
-        return price;
-    }
-
-    public void setPrice(String price) {
-        this.price = price;
+    /**
+     * Fetches detailed information about a stock.
+     */
+    public StockOverviewResponse getStockDetails(String ticker) {
+        String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
+        try {
+            return restTemplate.getForObject(url, StockOverviewResponse.class);
+        } catch (Exception e) {
+            System.err.println("Error fetching stock details [" + ticker + "]: " + e.getMessage());
+        }
+        return null;
     }
 }

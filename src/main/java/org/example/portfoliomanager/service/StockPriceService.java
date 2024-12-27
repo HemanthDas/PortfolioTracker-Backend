@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 @Service
@@ -39,15 +38,14 @@ public class StockPriceService {
      * Validates the existence of a stock by checking its overview data.
      */
     public boolean isStockValid(String ticker) {
-        System.out.println(ticker);
         String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
         try {
             StockOverviewResponse response = restTemplate.getForObject(url, StockOverviewResponse.class);
-            return response != null && response.getName() != null && !response.getName().isEmpty();
+            return response == null || response.getName() == null || response.getName().isEmpty();
         } catch (Exception e) {
             System.err.println("Error validating stock ticker [" + ticker + "]: " + e.getMessage());
         }
-        return false;
+        return true;
     }
 
     /**
@@ -56,10 +54,15 @@ public class StockPriceService {
     public StockOverviewResponse getStockDetails(String ticker) {
         String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
         try {
-            return restTemplate.getForObject(url, StockOverviewResponse.class);
+            StockOverviewResponse response = restTemplate.getForObject(url, StockOverviewResponse.class);
+            if (response == null || response.getName() == null || response.getName().isEmpty()) {
+                throw new RuntimeException("No data found for stock symbol: " + ticker);
+            }
+            return response;
         } catch (Exception e) {
-            System.err.println("Error fetching stock details [" + ticker + "]: " + e.getMessage());
+            System.err.println("Error fetching stock details for [" + ticker + "]: " + e.getMessage());
         }
         return null;
     }
+
 }

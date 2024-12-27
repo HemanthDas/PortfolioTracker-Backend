@@ -3,6 +3,7 @@ package org.example.portfoliomanager.controller;
 import org.example.portfoliomanager.dto.DTOMapper;
 import org.example.portfoliomanager.dto.ResponseAPI;
 import org.example.portfoliomanager.dto.StockDTO;
+import org.example.portfoliomanager.dto.StockOverviewResponse;
 import org.example.portfoliomanager.models.Stock;
 import org.example.portfoliomanager.service.StockPriceService;
 import org.example.portfoliomanager.service.StockService;
@@ -27,8 +28,7 @@ public class StockController {
     @PostMapping("/{userId}")
     public ResponseEntity<ResponseAPI<StockDTO>> addStock(@PathVariable Long userId, @RequestBody Stock stock) {
         try {
-            System.out.println(stock);
-            if(!stockPriceService.isStockValid(stock.getTicker())){
+            if(stockPriceService.isStockValid(stock.getTicker())){
                 return ResponseEntity.badRequest().body(
                         new ResponseAPI<>(false, "Invalid stock symbol. Please ensure the stock exists in the real world.", null)
                 );
@@ -128,6 +128,24 @@ public class StockController {
             return ResponseEntity.status(500).body(response);
         }
     }
-
+    @GetMapping("/stock/{ticker}")
+    public ResponseEntity<ResponseAPI<StockOverviewResponse>> getStockByTicker(@PathVariable String ticker) {
+        try{
+            if(stockPriceService.isStockValid(ticker)){
+                return ResponseEntity.badRequest().body(
+                        new ResponseAPI<>(false, "Invalid stock symbol. Please ensure the stock exists in the real world.", null)
+                );
+            }
+            StockOverviewResponse stockOverviewResponse = stockPriceService.getStockDetails(ticker);
+            ResponseAPI<StockOverviewResponse> response = new ResponseAPI<>(true, "Stock details retrieved successfully.", stockOverviewResponse);
+            return ResponseEntity.ok(response);
+        }catch (RuntimeException ex) {
+            ResponseAPI<StockOverviewResponse> response = new ResponseAPI<>(false, ex.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }catch (Exception ex) {
+            ResponseAPI<StockOverviewResponse> response = new ResponseAPI<>(false, "An unexpected error occurred.", null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 
 }

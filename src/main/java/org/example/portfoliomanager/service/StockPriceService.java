@@ -1,11 +1,15 @@
 package org.example.portfoliomanager.service;
 
+import org.example.portfoliomanager.dto.IntradayStockDataResponse;
 import org.example.portfoliomanager.dto.StockOverviewResponse;
 import org.example.portfoliomanager.dto.StockPriceResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 
 @Service
@@ -37,6 +41,7 @@ public class StockPriceService {
     /**
      * Validates the existence of a stock by checking its overview data.
      */
+    @Cacheable("stockValidation")
     public boolean isStockValid(String ticker) {
         String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
         try {
@@ -51,6 +56,7 @@ public class StockPriceService {
     /**
      * Fetches detailed information about a stock.
      */
+    @Cacheable("stockDetails")
     public StockOverviewResponse getStockDetails(String ticker) {
         String url = String.format("%s?function=OVERVIEW&symbol=%s&apikey=%s", API_URL, ticker, API_KEY);
         try {
@@ -61,8 +67,22 @@ public class StockPriceService {
             return response;
         } catch (Exception e) {
             System.err.println("Error fetching stock details for [" + ticker + "]: " + e.getMessage());
+            throw new RuntimeException("Error fetching stock details for [" + ticker + "]: " + e.getMessage());
         }
-        return null;
+    }
+
+    /**
+     * Fetches intraday stock data for a given ticker and prepares it for visualization.
+     */
+    @Cacheable("intradayStockData")
+    public IntradayStockDataResponse getIntradayStockData(String ticker) {
+        String url = String.format("%s?function=TIME_SERIES_INTRADAY&symbol=%s&interval=5min&apikey=%s", API_URL, ticker, API_KEY);
+        try {
+            return restTemplate.getForObject(url, IntradayStockDataResponse.class);
+        } catch (Exception e) {
+            System.err.println("Error fetching intraday stock data: " + e.getMessage());
+            throw new RuntimeException("Unable to fetch intraday stock data for ticker: " + ticker);
+        }
     }
 
 }

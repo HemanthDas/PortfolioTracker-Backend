@@ -1,9 +1,6 @@
 package org.example.portfoliomanager.controller;
 
-import org.example.portfoliomanager.dto.DTOMapper;
-import org.example.portfoliomanager.dto.ResponseAPI;
-import org.example.portfoliomanager.dto.StockDTO;
-import org.example.portfoliomanager.dto.StockOverviewResponse;
+import org.example.portfoliomanager.dto.*;
 import org.example.portfoliomanager.models.Stock;
 import org.example.portfoliomanager.service.StockPriceService;
 import org.example.portfoliomanager.service.StockService;
@@ -12,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/stocks")
@@ -33,6 +32,13 @@ public class StockController {
                         new ResponseAPI<>(false, "Invalid stock symbol. Please ensure the stock exists in the real world.", null)
                 );
             }
+            StockOverviewResponse stockOverviewResponse = stockPriceService.getStockDetails(stock.getTicker());
+            if (stockOverviewResponse == null || stockOverviewResponse.getName() == null || stockOverviewResponse.getName().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ResponseAPI<>(false, "Invalid stock symbol. Please ensure the stock exists in the real world.", null)
+                );
+            }
+            stock.setName(stockOverviewResponse.getName());
             Stock savedStock = stockService.addStock(userId, stock);
             StockDTO stockDTO = DTOMapper.toStockDTO(savedStock);
             ResponseAPI<StockDTO> response = new ResponseAPI<>(true, "Stock added successfully.", stockDTO);
@@ -52,6 +58,8 @@ public class StockController {
     public ResponseEntity<ResponseAPI<StockDTO>> updateStock(@PathVariable Long id, @RequestBody Stock stock) {
         try {
             // Check if the stock exists
+
+            System.out.println(stock.getName()  );
             Stock existingStock = stockService.getStocksById(id);
             if (existingStock == null) {
                 return ResponseEntity.status(404).body(
@@ -60,6 +68,7 @@ public class StockController {
             }
 
             // Update the stock
+            stock.setName(existingStock.getName());
             Stock updatedStock = stockService.updateStock(id, stock);
 
             // Convert to DTO for response
@@ -128,8 +137,29 @@ public class StockController {
             return ResponseEntity.status(500).body(response);
         }
     }
-    @GetMapping("/stock/{ticker}")
-    public ResponseEntity<ResponseAPI<StockOverviewResponse>> getStockByTicker(@PathVariable String ticker) {
+    @GetMapping("/user/{userId}/{symbol}")
+    public ResponseEntity<ResponseAPI<StockDTO>> getStocksByUser(@PathVariable Long userId,@PathVariable String symbol) {
+        try {
+            List<Stock> stocks = stockService.getStocksByUser(userId);
+            Stock stock = stocks.stream()
+                    .filter(s -> s.getTicker().equalsIgnoreCase(symbol))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Stock with symbol '" + symbol + "' not found for user ID " + userId));
+            StockDTO stockDTO = DTOMapper.toStockDTO(stock);
+
+            // Prepare response
+            ResponseAPI<StockDTO> response = new ResponseAPI<>(true, "Stock fetched successfully.", stockDTO);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            ResponseAPI<StockDTO> response = new ResponseAPI<>(false, ex.getMessage(), null);
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception ex) {
+            ResponseAPI<StockDTO> response = new ResponseAPI<>(false, "An unexpected error occurred: " + ex.getMessage(), null);
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    @GetMapping("/details/{ticker}")
+    public ResponseEntity<ResponseAPI<StockOverviewResponse>> getStockDetailsByTicker(@PathVariable String ticker) {
         try{
             if(stockPriceService.isStockValid(ticker)){
                 return ResponseEntity.badRequest().body(
@@ -145,6 +175,21 @@ public class StockController {
         }catch (Exception ex) {
             ResponseAPI<StockOverviewResponse> response = new ResponseAPI<>(false, "An unexpected error occurred.", null);
             return ResponseEntity.status(500).body(response);
+        }
+    }
+    @GetMapping("/{ticker}/intra-day")
+    public ResponseEntity<ResponseAPI<IntradayStockDataResponse>> getIntradayStockData(@PathVariable String ticker) {
+        try {
+            IntradayStockDataResponse intradayStockData = stockPriceService.getIntradayStockData(ticker);
+            return ResponseEntity.ok(
+                    new ResponseAPI<>(true, "Intraday stock data retrieved successfully.", intradayStockData)
+            );
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseAPI<>(false, "Error: " + ex.getMessage(), null));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseAPI<>(false, "An unexpected error occurred.", null));
         }
     }
 

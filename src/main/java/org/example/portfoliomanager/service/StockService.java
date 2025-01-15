@@ -4,17 +4,17 @@ import org.example.portfoliomanager.models.Stock;
 import org.example.portfoliomanager.models.User;
 import org.example.portfoliomanager.repositories.StockRepository;
 import org.example.portfoliomanager.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StockService {
     private final StockRepository stockRepository;
     private final StockPriceService stockPriceService;
     private final UserRepository userRepository;
-
+    @Autowired
     public StockService(StockRepository stockRepository, StockPriceService stockPriceService, UserRepository userRepository) {
         this.stockRepository = stockRepository;
         this.stockPriceService = stockPriceService;

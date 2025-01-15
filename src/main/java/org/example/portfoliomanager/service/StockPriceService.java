@@ -8,10 +8,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
-import java.util.TreeMap;
-
-
 @Service
 public class StockPriceService {
     private static final String API_URL = "https://www.alphavantage.co/query";

@@ -1,6 +1,7 @@
 # Portfolio Manager Application
 
 ## Overview
+
 Portfolio Manager is a Spring Boot application designed to manage a user's stock portfolio. It supports features such as adding, updating, deleting stocks, initializing a portfolio, and calculating portfolio value.
 
 ---
@@ -28,6 +29,7 @@ Before running the application, ensure you have the following installed:
 ## Getting Started
 
 ### Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd portfolio-manager
@@ -38,6 +40,7 @@ cd portfolio-manager
 Set up a MySQL database named `portfolio_db`. Update the connection details in the appropriate `application.properties` or `application-prod.properties` file.
 
 #### Default Configuration (`application.properties`):
+
 ```properties
 spring.application.name=PortfolioManager
 spring.datasource.url=jdbc:mysql://localhost:3306/portfolio_db
@@ -52,6 +55,7 @@ spring.profiles.active=${ACTIVEPROFILE}
 ```
 
 #### Production Configuration (`application-prod.properties`):
+
 ```properties
 spring.application.name=PortfolioManager
 spring.datasource.url=${DBURL}
@@ -65,6 +69,7 @@ spring.cache.type=simple
 ```
 
 Ensure you set the environment variables:
+
 - `DBURL` (e.g., `jdbc:mysql://prod-host:3306/prod_db`)
 - `DBUSER` (e.g., `prod_user`)
 - `DBPASS` (e.g., `prod_password`)
@@ -74,6 +79,7 @@ If no profile is set, the application will default to `application.properties`.
 ### Run the Application
 
 1. Compile and package the application:
+
    ```bash
    mvn clean package
    ```
@@ -85,37 +91,53 @@ If no profile is set, the application will default to `application.properties`.
 
 ---
 
+## Hosted Application
+
+The application is hosted at [https://tmpr.site](https://tmpr.site). You can use the following endpoint to test if the application is working:
+
+```bash
+https://tmpr.site/api/greet
+```
+
+The deployment utilizes AWS EC2 for hosting, AWS RDS for the database, and Cloudflare for DNS and security.
+
+---
+
 ## API Endpoints
 
 ### User Endpoints
 
-| Method | Endpoint                   | Description               |
-|--------|----------------------------|---------------------------|
-| POST   | `/api/users`               | Create a new user         |
-| GET    | `/api/users/{id}`          | Get user by ID            |
+| Method | Endpoint                         | Description          |
+| ------ | -------------------------------- | -------------------- |
+| POST   | `/api/users`                     | Create a new user    |
+| GET    | `/api/users/{id}`                | Get user by ID       |
 | GET    | `/api/users/username/{username}` | Get user by username |
 
 ### Stock Endpoints
 
-| Method | Endpoint                      | Description                      |
-|--------|-------------------------------|----------------------------------|
-| POST   | `/api/stocks/{userId}`        | Add a stock to a user's portfolio |
-| PUT    | `/api/stocks/{id}`            | Update stock details             |
-| DELETE | `/api/stocks/{id}`            | Delete a stock                   |
-| GET    | `/api/stocks/user/{userId}`   | Get all stocks for a user        |
+| Method | Endpoint                             | Description                       |
+| ------ | ------------------------------------ | --------------------------------- |
+| POST   | `/api/stocks/{userId}`               | Add a stock to a user's portfolio |
+| PUT    | `/api/stocks/{id}`                   | Update stock details              |
+| DELETE | `/api/stocks/{id}`                   | Delete a stock                    |
+| GET    | `/api/stocks/{id}`                   | Get stock by ID                   |
+| GET    | `/api/stocks/user/{userId}`          | Get all stocks for a user         |
+| GET    | `/api/stocks/user/{userId}/{symbol}` | Get stock by user ID and symbol   |
+| GET    | `/api/stocks/details/{ticker}`       | Get stock details by ticker       |
+| GET    | `/api/stocks/{ticker}/intra-day`     | Get intraday stock data by ticker |
 
 ### Portfolio Endpoints
 
-| Method | Endpoint                           | Description                     |
-|--------|------------------------------------|---------------------------------|
+| Method | Endpoint                               | Description                     |
+| ------ | -------------------------------------- | ------------------------------- |
 | POST   | `/api/portfolio/initialize/{username}` | Initialize portfolio for a user |
-| GET    | `/api/portfolio/value/{userId}`    | Get total portfolio value       |
+| GET    | `/api/portfolio/value/{userId}`        | Get total portfolio value       |
 
 ### Greetings Endpoints
 
-| Method | Endpoint     | Description                     |
-|--------|--------------|---------------------------------|
-| GET    | `/api/greet` | Get total portfolio value       |
+| Method | Endpoint     | Description               |
+| ------ | ------------ | ------------------------- |
+| GET    | `/api/greet` | Get total portfolio value |
 
 ---
 

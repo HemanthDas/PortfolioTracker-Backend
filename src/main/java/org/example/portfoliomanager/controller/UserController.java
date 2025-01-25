@@ -8,7 +8,7 @@ import org.example.portfoliomanager.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @RestController
-@CrossOrigin
+@CrossOrigin("*")
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;

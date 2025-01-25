@@ -14,7 +14,7 @@ public class StockService {
     private final StockRepository stockRepository;
     private final StockPriceService stockPriceService;
     private final UserRepository userRepository;
-    @Autowired
+
     public StockService(StockRepository stockRepository, StockPriceService stockPriceService, UserRepository userRepository) {
         this.stockRepository = stockRepository;
         this.stockPriceService = stockPriceService;

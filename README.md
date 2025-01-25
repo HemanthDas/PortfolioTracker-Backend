@@ -111,6 +111,12 @@ If no profile is set, the application will default to `application.properties`.
 | POST   | `/api/portfolio/initialize/{username}` | Initialize portfolio for a user |
 | GET    | `/api/portfolio/value/{userId}`    | Get total portfolio value       |
 
+### Greetings Endpoints
+
+| Method | Endpoint     | Description                     |
+|--------|--------------|---------------------------------|
+| GET    | `/api/greet` | Get total portfolio value       |
+
 ---
 
 ## Error Handling

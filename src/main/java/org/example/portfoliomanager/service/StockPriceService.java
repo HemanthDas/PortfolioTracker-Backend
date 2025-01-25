@@ -11,8 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class StockPriceService {
     private static final String API_URL = "https://www.alphavantage.co/query";
-
-    @Value("${APIKEY}")
+    @Value("APIKEY")
     private String API_KEY;
 
     private final RestTemplate restTemplate = new RestTemplate();
